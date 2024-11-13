@@ -47,12 +47,16 @@ async function main() {
         try {
             list = await getList()
             await Promise.all(list.map(async item => {
-                if (!articles[item.code] && /^Binance Will List/.test(item.title)) {
-                    // 发现新的上币计划
-                    log_with_time(`发现新的上币公告`, item.code, item.title)
-                    const res = await getDetail(item);
-                    return log_with_time(`发现新的上币计划`, res)
+                if (!articles[item.code]) {
+                    log_with_time(`新公告:`, item.code, item.title, new Date(item.releaseDate))
+                    if (/^Binance Will List/.test(item.title)) {
+                        // 发现新的上币计划
+                        log_with_time(`发现新的上币公告`, item.code, item.title)
+                        const res = await getDetail(item);
+                        return log_with_time(`发现新的上币计划`, res)
+                    }
                 }
+
             }))
 
         } catch (err) {
