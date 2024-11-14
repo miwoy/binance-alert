@@ -38,9 +38,9 @@ async function main() {
     // let list = await getList()
 
     // 首次获取缓存
-    list.forEach(item => {
-        articles[item.code] = item
-    })
+    // list.forEach(item => {
+    //     articles[item.code] = item
+    // })
     saveCache(articles)
 
     while (true) {
@@ -140,7 +140,7 @@ async function getTimeline() {
 async function getAnnouncement() {
     const api_url = "https://www.binance.com/en/support/announcement";
     const res = await axios.get(api_url, {
-        httpsAgent: new HttpsProxyAgent(PROXY)
+        httpsAgent: PROXY ? new HttpsProxyAgent(PROXY) : undefined
     });
     return parseHtmlLatest(res.data)
 }
