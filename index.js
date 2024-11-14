@@ -2,7 +2,7 @@
 // 把上面注释转换成 js 代码
 const axios = require('axios');
 const fs = require('fs');
-const { parseHtml } = require("./lib/utils")
+const { parseHtml, parseHtmlList } = require("./lib/utils")
 const { HttpsProxyAgent } = require('https-proxy-agent');
 const dotenv = require("dotenv")
 dotenv.config()
@@ -45,19 +45,42 @@ async function main() {
 
     while (true) {
         try {
-            list = await getList()
-            await Promise.all(list.map(async item => {
-                if (!articles[item.code]) {
-                    log_with_time(`新公告:`, item.code, item.title, new Date(item.releaseDate))
-                    if (/^Binance Will List/.test(item.title)) {
-                        // 发现新的上币计划
-                        log_with_time(`发现新的上币公告`, item.code, item.title)
-                        const res = await getDetail(item);
-                        return log_with_time(`发现新的上币计划`, res)
-                    }
-                }
+            await Promise.all([
+                (async () => {
+                    list = await getList()
+                    await Promise.all(list.map(async item => {
+                        if (!articles[item.code]) {
+                            log_with_time(`新公告:`, item.code, item.title, new Date(item.releaseDate))
+                            if (/^Binance Will List/.test(item.title)) {
+                                // 发现新的上币计划
+                                log_with_time(`发现新的上币公告`, item.code, item.title)
+                                const res = await getDetail(item);
+                                return log_with_time(`发现新的上币计划`, res)
+                            }
+                        }
 
-            }))
+                    }))
+                })(),
+                (async () => {
+                    
+                    let posts = await getTimeline()
+                    posts = posts.slice(0,pageSize)
+                    await Promise.all(posts.map(async item => {
+                        if (!articles[item.id]) {
+                            log_with_time(`新公告:`, item.id, item.title, new Date(item.firstReleaseTime))
+                            // if (/^Binance Will List/.test(item.title)) {
+                            //     // 发现新的上币计划
+                            //     log_with_time(`发现新的上币公告`, item.code, item.title)
+                            //     const res = await getDetail(item);
+                            //     return log_with_time(`发现新的上币计划`, res)
+                            // }
+                            articles[item.id] = item
+                        }
+                    }))
+
+                })()
+            ])
+
 
         } catch (err) {
             console.error(err)
@@ -88,6 +111,14 @@ async function getList() {
     } catch (e) {
         log_with_time(`Error fetching list: ${e}`);
     }
+}
+
+async function getTimeline() {
+    let api_url = "https://www.binance.com/en/square/profile/binance_announcement"
+    const res = await axios.get(api_url, {
+        httpsAgent: new HttpsProxyAgent(PROXY)
+    });
+    return parseHtmlList(res.data)
 }
 
 async function getDetail(article) {
