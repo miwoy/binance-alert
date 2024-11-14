@@ -116,7 +116,7 @@ async function getList() {
 async function getTimeline() {
     let api_url = "https://www.binance.com/en/square/profile/binance_announcement"
     const res = await axios.get(api_url, {
-        httpsAgent: new HttpsProxyAgent(PROXY)
+        httpsAgent: PROXY ? new HttpsProxyAgent(PROXY) : undefined
     });
     return parseHtmlList(res.data)
 }
