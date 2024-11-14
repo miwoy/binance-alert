@@ -12,7 +12,7 @@ const pageSize = 2
 const api_url = `https://www.binance.com/bapi/composite/v1/public/cms/article/list/query?type=1&catalogId=48&pageNo=1&pageSize=${pageSize}`;
 const detail_base_url = "https://www.binance.com/en/support/announcement/";
 const filepath = './.articles.json';
-const tick = 10 * 1000
+const tick = 5 * 1000
 
 function initCache() {
 
