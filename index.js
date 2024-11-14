@@ -35,7 +35,7 @@ async function main() {
     const articles = initCache()
     log_with_time("Initialization complete. Monitoring new articles...");
 
-    // let list = await getList()
+    let list = await getList()
 
     // 首次获取缓存
     // list.forEach(item => {
@@ -106,8 +106,9 @@ async function main() {
                 articles[item.code] = item
             })
             saveCache(articles)
+            await sleep(tick)
         }
-        await sleep(tick)
+
     }
 }
 
