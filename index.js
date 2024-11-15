@@ -7,12 +7,35 @@ const { HttpsProxyAgent } = require('https-proxy-agent');
 const dotenv = require("dotenv")
 dotenv.config()
 const PROXY = process.env.PROXY;
+const PUSH_URL = process.env.PUSH_URL
+const PUSH_APP_SERCRET = process.env.PUSH_APP_SERCRET
 
-const pageSize = 2
+const pageSize = 10
 const api_url = `https://www.binance.com/bapi/composite/v1/public/cms/article/list/query?type=1&catalogId=48&pageNo=1&pageSize=${pageSize}`;
 const detail_base_url = "https://www.binance.com/en/support/announcement/";
 const filepath = './.articles.json';
-const tick = 5 * 1000
+const tick = 8 * 1000
+
+async function pushMessage(article) {
+    if (PUSH_URL === 'null') return;
+    function formatStr(str) {
+        return str.toString().replace(/([|{\[\]*_~}+)(#>!=\-.])/gm, '\\$1')
+    }
+    const data = {
+        appSercret: PUSH_APP_SERCRET,
+        message: `*【Binance list new coin】*\n\n*Titile*: ${formatStr(article.title)}\n\n*${article.mints.map(m => formatStr(m)).join('\n\n')}*\n\nDone\\.`,
+        inlineKeybords: [[{
+            text: '买入',
+            url: 'https://t.me/panghu_sol_bot'
+        }]]
+    };
+    try {
+        const res = await axios.post(PUSH_URL, data);
+        console.info(res.data);
+    } catch (e) {
+        console.error(e);
+    }
+}
 
 function initCache() {
 
@@ -54,12 +77,23 @@ async function main() {
                             if (/^Binance Will List/.test(item.title)) {
                                 // 发现新的上币计划
                                 log_with_time(`发现新的上币公告`, item.code, item.title)
+
                                 const res = await getDetail(item);
-                                return log_with_time(`发现新的上币计划`, res)
+                                if (res.length > 0) {
+                                    pushMessage({
+                                        title: item.title,
+                                        code: item.code,
+                                        releaseDate: new Date(item.releaseDate),
+                                        mints: res
+                                    }).catch(console.error)
+                                    log_with_time(`发现新的上币计划`, res)
+                                }
+
                             }
                         }
-
+                        articles[item.code] = item
                     }))
+
                 })(),
                 (async () => {
 
@@ -102,9 +136,6 @@ async function main() {
             console.error(err)
             log_with_time(`Error during monitoring: ${err.message}`)
         } finally {
-            list.forEach(item => {
-                articles[item.code] = item
-            })
             saveCache(articles)
             await sleep(tick)
         }
