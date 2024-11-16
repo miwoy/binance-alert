@@ -170,7 +170,7 @@ async function getTimeline() {
 }
 
 async function getAnnouncement() {
-    const api_url = "https://www.binance.com/en/support/announcement";
+    const api_url = "https://www.binance.com/en/support/announcement?"+Date.now();
     const res = await axios.get(api_url, {
         httpsAgent: PROXY ? new HttpsProxyAgent(PROXY) : undefined
     });
