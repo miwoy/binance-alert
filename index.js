@@ -10,7 +10,7 @@ const PROXY = process.env.PROXY;
 const PUSH_URL = process.env.PUSH_URL
 const PUSH_APP_SERCRET = process.env.PUSH_APP_SERCRET
 
-const pageSize = 2
+const pageSize = 10
 const api_url = `https://www.binance.com/bapi/composite/v1/public/cms/article/list/query?type=1&catalogId=48&pageNo=1&pageSize=${pageSize}`;
 const detail_base_url = "https://www.binance.com/en/support/announcement/";
 const filepath = './.articles.json';
@@ -23,7 +23,7 @@ async function pushMessage(article) {
     }
     const data = {
         appSercret: PUSH_APP_SERCRET,
-        message: `*【Binance list new coin】*\n\n*Titile*: ${formatStr(article.title)}\n\n*${article.mints.map(m => formatStr(m)).join('\n\n')}*\n\nDone\\.`,
+        message: `*【Binance list new coin】*\n\n*Titile*: ${formatStr(article.title)}\n\n*\`${article.mints.map(m => formatStr(m)).join('`\n\n`')}\`*\n\n_From Binance Monitor_\\.`,
         inlineKeybords: [[{
             text: '买入',
             url: 'https://t.me/panghu_sol_bot'
