@@ -10,7 +10,7 @@ const PROXY = process.env.PROXY;
 const PUSH_URL = process.env.PUSH_URL
 const PUSH_APP_SERCRET = process.env.PUSH_APP_SERCRET
 
-const pageSize = 10
+const pageSize = 2
 const api_url = `https://www.binance.com/bapi/composite/v1/public/cms/article/list/query?type=1&catalogId=48&pageNo=1&pageSize=${pageSize}`;
 const detail_base_url = "https://www.binance.com/en/support/announcement/";
 const filepath = './.articles.json';
@@ -170,7 +170,7 @@ async function getTimeline() {
 }
 
 async function getAnnouncement() {
-    const api_url = "https://www.binance.com/en/support/announcement?"+Date.now();
+    const api_url = "https://www.binance.com/en/support/announcement";
     const res = await axios.get(api_url, {
         httpsAgent: PROXY ? new HttpsProxyAgent(PROXY) : undefined
     });
